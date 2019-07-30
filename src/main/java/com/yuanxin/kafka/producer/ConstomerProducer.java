@@ -1,10 +1,10 @@
-package com.yuanxin.kafka;
+package com.yuanxin.kafka.producer;
 
 import org.apache.kafka.clients.producer.*;
 
 import java.util.Properties;
 
-public class ConsumerProducer {
+public class ConstomerProducer {
     public static void main(String[] args){
         //配置文件
         Properties props = new Properties();
@@ -23,19 +23,19 @@ public class ConsumerProducer {
         //KV的序列化类
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        //增加自定义分区配置
+        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, ConstomerPartitioner.class);
 
         Producer<String, String> producer = new KafkaProducer<String, String>(props);
         for (int i = 0; i < 10; i++) {
-      producer.send(
-          new ProducerRecord<String, String>("second", "key" + i, "value" + i),
-          new Callback() {
-            public void onCompletion(RecordMetadata metadata, Exception exception) {
-              if (exception == null) {
-                  System.out.println("Topic：" + metadata.topic() + "--Partition：" + metadata.partition() + "--Offset：" + metadata.offset());
-              }else{
-                  System.out.println("发送失败");
-              }
-            }
+            producer.send(new ProducerRecord<String, String>("second", "key" + i, "value" + i),
+                new Callback() {
+                    public void onCompletion(RecordMetadata metadata, Exception exception) {
+                        if (exception == null) {
+                            System.out.println("Topic：" + metadata.topic() + "--Partition：" + metadata.partition() + "--Offset：" + metadata.offset());
+                        }else{
+                            System.out.println("发送失败");
+                        }}
           });
         }
         producer.close();
