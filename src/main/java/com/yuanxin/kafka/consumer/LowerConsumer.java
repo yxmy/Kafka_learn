@@ -6,7 +6,6 @@ import kafka.cluster.BrokerEndPoint;
 import kafka.javaapi.*;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
-import kafka.message.Message;
 import kafka.message.MessageAndOffset;
 
 import java.nio.ByteBuffer;
@@ -31,13 +30,16 @@ public class LowerConsumer {
         ports.add(9094);
 
         //设置topic
-        String topic = "third";
+        String topic = "first";
 
         //设置partition
-        int partition = 0;
+        int partition = 1;
 
         //设置offset
-        int offset = 2;
+        int offset = 0;
+
+        LowerConsumer lowerConsumer = new LowerConsumer();
+        lowerConsumer.getData(broker, ports, topic, partition, offset);
     }
 
     /**
@@ -48,7 +50,7 @@ public class LowerConsumer {
      * @param partition
      * @return
      */
-    private static BrokerEndPoint findLeader(String broker, List<Integer> ports, String topic, int partition) {
+    private BrokerEndPoint findLeader(String broker, List<Integer> ports, String topic, int partition) {
         for (Integer port : ports) {
             SimpleConsumer leader = new SimpleConsumer(broker, port, 100, 1024 * 4, "findLeader");
             //获取元数据请求
@@ -83,12 +85,14 @@ public class LowerConsumer {
         BrokerEndPoint brokerEndPoint = findLeader(broker, ports, topic, partition);
         String host = brokerEndPoint.host();
         int port = brokerEndPoint.port();
+        System.out.println("leader---" + host + ":" + port);
         SimpleConsumer simpleConsumer = new SimpleConsumer(host, port, 1000, 1024 * 4, "getData");
 
         //构造获取数据所需的fetchRequest
-        FetchRequest fetchRequest = new FetchRequestBuilder().addFetch(topic, partition, offset, 100).build();
+        FetchRequest fetchRequest = new FetchRequestBuilder().addFetch(topic, partition, offset, 1000000).build();
         FetchResponse fetchResponse = simpleConsumer.fetch(fetchRequest);
         ByteBufferMessageSet messageAndOffsets = fetchResponse.messageSet(topic, partition);
+        System.out.println("-------------------message-----------------");
         for (MessageAndOffset messageAndOffset : messageAndOffsets) {
             long offset1 = messageAndOffset.offset();
             ByteBuffer payload = messageAndOffset.message().payload();

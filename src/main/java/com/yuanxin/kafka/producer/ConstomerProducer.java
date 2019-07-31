@@ -1,7 +1,10 @@
 package com.yuanxin.kafka.producer;
 
+import com.yuanxin.kafka.interceptor.CountInterceptor;
+import com.yuanxin.kafka.interceptor.TimeInterceptor;
 import org.apache.kafka.clients.producer.*;
 
+import java.util.ArrayList;
 import java.util.Properties;
 
 public class ConstomerProducer {
@@ -24,7 +27,12 @@ public class ConstomerProducer {
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         //增加自定义分区配置
-        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, ConstomerPartitioner.class);
+//        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, ConstomerPartitioner.class);
+        //添加拦截器
+        ArrayList<String> list = new ArrayList<String>();
+        list.add(TimeInterceptor.class.getName());
+        list.add(CountInterceptor.class.getName());
+        props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, list);
 
         Producer<String, String> producer = new KafkaProducer<String, String>(props);
         for (int i = 0; i < 10; i++) {
